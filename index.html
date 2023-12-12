@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.107.1/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.107.1/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    
+    #toggle-building { z-index: 1; position: fixed; top: 5px; left: 5px; }
+
+    container { margin: 0 auto; min-height: 100%;}
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer" class="fullSize"></div>
+  <button id="toggle-building" class="btn btn-primary">New Building</button>
+  
+  <script type="module">
+
+
+
+    // Replace number below with buildingID of your uploaded model on cesium ion at: https://ion.cesium.com/assets
+    const buildingID = 2388071;
+    const alfamart = 2388182;
+    const innagaruda = 2388431;
+    const terasmalioboro = 2388407;
+    const bankindonesia = 2388445;
+    const keraton = 2388485;
+    const hamzahbatik = 2388495;
+    const sonobudoyo = 2388896;
+    // Replace `your_access_token` with your Cesium ion access token at: https://ion.cesium.com/tokens
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiODQ1OGMyMC1hZTdmLTRhMDctOTkwZS02ODg5OTJlMjQ3ZDIiLCJpZCI6MTgxNzEwLCJpYXQiOjE3MDIxNzk5ODF9.N8DG6OFVqEDknarurJsF_EUGGwk8Y7F-I0AaXb-vi00';
+
+    
+
+
+
+    // Initialize the viewer with Cesium World Terrain.
+     const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrain: Cesium.Terrain.fromWorldTerrain(),
+    });
+
+ // set lighting to true
+  viewer.scene.globe.enableLighting = true;
+  // Add Photorealistic 3D Tiles
+  try {
+    const tileset = await Cesium.createGooglePhotorealistic3DTileset();
+    viewer.scene.primitives.add(tileset);
+  } catch (error) {
+    console.log(`Error loading Photorealistic 3D Tiles tileset.
+    ${error}`);
+  }
+    const buildingsTileset = await Cesium.createOsmBuildingsAsync();
+    viewer.scene.primitives.add(buildingsTileset);
+    buildingsTileset.style = new Cesium.Cesium3DTileStyle({
+      // Create a style rule to control each building's "show" property.
+      show: {
+        conditions : [
+          // Any building that has this elementId will have `show = false`.
+          ['${elementId} === 283887029', false],
+          ['${elementId} === 121643262', false],
+          ['${elementId} === 610114024', false],
+          ['${elementId} === 283036199', false],
+          ['${elementId} === 283036198', false],
+          ['${elementId} === 	287421357', false],
+
+          // Hotel Inna Garuda
+          ['${elementId} === 	314510849', false],
+          ['${elementId} === 	314510855', false],
+          ['${elementId} === 	314510850', false],
+          ['${elementId} === 	280995343', false],
+          ['${elementId} === 492612003', false],
+          ['${elementId} === 		280995344', false],
+          // Bangunan Depan Inna Garuda
+          ['${elementId} === 		280982722', false],
+          ['${elementId} === 		283556922', false],
+          ['${elementId} === 		492612012', false],
+          ['${elementId} === 	492612014', false],
+          ['${elementId} === 492612003', false],
+          ['${elementId} === 			611054343', false],
+          // Alfamart
+          ['${elementId} === 			283422975', false],
+          // Teras Malioboro
+          ['${elementId} === 		492611996', false],
+          ['${elementId} === 		295664007', false],
+          ['${elementId} === 		295664005', false],
+          ['${elementId} === 	288034427', false],
+          // Hamzah Batik
+          // Bank Indonesia
+          ['${elementId} === 	283720502', false],
+          // If a building does not have one of these elementIds, set `show = true`.
+          [true, true]
+        ]
+      },
+      // Set the default color style for this particular 3D Tileset.
+      // For any building that has a `cesium#color` property, use that color, otherwise make it white.
+      color: "Boolean(${feature['cesium#color']}) ? color(${feature['cesium#color']}) : color('#ffffff')"
+    });
+
+    // Add the 3D Tileset you created from your Cesium ion account.
+    const newBuildingTileset = await Cesium.Cesium3DTileset.fromIonAssetId(buildingID);
+    viewer.scene.primitives.add(newBuildingTileset);
+
+    // Move the camera to the new building.
+    viewer.flyTo(newBuildingTileset);
+
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+    newBuildingTileset.show = !newBuildingTileset.show;
+    };
+    
+    const alfamart2 = await Cesium.Cesium3DTileset.fromIonAssetId(alfamart);
+    viewer.scene.primitives.add(alfamart2);
+    // Toggle the tileset's show property when the button is clicked.
+     viewer.flyTo(alfamart2);
+    document.querySelector('#toggle-building').onclick = function() {
+    alfamart2.show = !alfamart2.show;
+    };
+    
+     const innagaruda2 = await Cesium.Cesium3DTileset.fromIonAssetId(innagaruda);
+    viewer.scene.primitives.add(innagaruda2);
+    // Toggle the tileset's show property when the button is clicked.
+    viewer.flyTo(innagaruda2);
+    document.querySelector('#toggle-building').onclick = function() {
+    innagaruda2.show = !innagaruda2.show;
+    };
+    const terasmalioboro2 = await Cesium.Cesium3DTileset.fromIonAssetId(terasmalioboro);
+    viewer.scene.primitives.add(terasmalioboro2);
+    viewer.flyTo(terasmalioboro2);
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+    terasmalioboro2.show = !terasmalioboro2.show;
+    };
+    const bankindonesia2 = await Cesium.Cesium3DTileset.fromIonAssetId(bankindonesia);
+    viewer.scene.primitives.add(bankindonesia2);
+    viewer.flyTo(bankindonesia2);
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+      bankindonesia2.show = !bankindonesia2.show;
+    };
+    const keraton2 = await Cesium.Cesium3DTileset.fromIonAssetId(keraton);
+    viewer.scene.primitives.add(keraton2);
+    viewer.flyTo(keraton2);
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+      keraton2.show = !keraton2.show;
+    };
+    const hamzahbatik2 = await Cesium.Cesium3DTileset.fromIonAssetId(hamzahbatik);
+    viewer.scene.primitives.add(hamzahbatik2);
+    viewer.flyTo(hamzahbatik2);
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+      hamzahbatik2.show = !hamzahbatik2.show;
+    };
+    const sonobudoyo2 = await Cesium.Cesium3DTileset.fromIonAssetId(sonobudoyo);
+    viewer.scene.primitives.add(sonobudoyo2);
+    viewer.flyTo(sonobudoyo2);
+    // Toggle the tileset's show property when the button is clicked.
+    document.querySelector('#toggle-building').onclick = function() {
+      sonobudoyo2.show = !sonobudoyo2.show;
+    };
+
+
+
+
+
+  // set lighting to true
+  viewer.scene.globe.enableLighting = true;
+  // adjust time so scene is lit by sun
+  viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(
+    "2023-01-01T00:00:00"
+  );
+
+  </script>
+</body>
+</html>
