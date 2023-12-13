@@ -15,7 +15,12 @@
 </head>
 <body>
   <div id="cesiumContainer" class="fullSize"></div>
-  <button id="toggle-building" class="btn btn-primary">New Building</button>
+  <div id="loadingOverlay"><h1>Loading...</h1></div>
+  <div id="toolbar">
+    <div id="viewChanged">View Changed</div>
+    <div id="cameraChanged">Camera Changed</div>
+  </div>
+  <button id="toggle-building" class="btn btn-primary">Tampilkan Bangunan</button>
   
   <script type="module">
 
@@ -288,7 +293,7 @@ viewer.clock.onTick.addEventListener(function (clock) {
   viewer.scene.globe.enableLighting = true;
   // adjust time so scene is lit by sun
   viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(
-    "2023-01-01T00:00:00"
+    "2023-01-01T07:00:00"
   );
 
   </script>
