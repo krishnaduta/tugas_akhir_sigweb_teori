@@ -104,7 +104,6 @@
     viewer.scene.primitives.add(newBuildingTileset);
 
     // Move the camera to the new building.
-    viewer.flyTo(newBuildingTileset);
 
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
@@ -114,7 +113,6 @@
     const alfamart2 = await Cesium.Cesium3DTileset.fromIonAssetId(alfamart);
     viewer.scene.primitives.add(alfamart2);
     // Toggle the tileset's show property when the button is clicked.
-     viewer.flyTo(alfamart2);
     document.querySelector('#toggle-building').onclick = function() {
     alfamart2.show = !alfamart2.show;
     };
@@ -122,50 +120,170 @@
      const innagaruda2 = await Cesium.Cesium3DTileset.fromIonAssetId(innagaruda);
     viewer.scene.primitives.add(innagaruda2);
     // Toggle the tileset's show property when the button is clicked.
-    viewer.flyTo(innagaruda2);
     document.querySelector('#toggle-building').onclick = function() {
     innagaruda2.show = !innagaruda2.show;
     };
     const terasmalioboro2 = await Cesium.Cesium3DTileset.fromIonAssetId(terasmalioboro);
     viewer.scene.primitives.add(terasmalioboro2);
-    viewer.flyTo(terasmalioboro2);
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
     terasmalioboro2.show = !terasmalioboro2.show;
     };
     const bankindonesia2 = await Cesium.Cesium3DTileset.fromIonAssetId(bankindonesia);
     viewer.scene.primitives.add(bankindonesia2);
-    viewer.flyTo(bankindonesia2);
+  
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
       bankindonesia2.show = !bankindonesia2.show;
     };
     const keraton2 = await Cesium.Cesium3DTileset.fromIonAssetId(keraton);
     viewer.scene.primitives.add(keraton2);
-    viewer.flyTo(keraton2);
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
       keraton2.show = !keraton2.show;
     };
     const hamzahbatik2 = await Cesium.Cesium3DTileset.fromIonAssetId(hamzahbatik);
     viewer.scene.primitives.add(hamzahbatik2);
-    viewer.flyTo(hamzahbatik2);
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
       hamzahbatik2.show = !hamzahbatik2.show;
     };
     const sonobudoyo2 = await Cesium.Cesium3DTileset.fromIonAssetId(sonobudoyo);
     viewer.scene.primitives.add(sonobudoyo2);
-    viewer.flyTo(sonobudoyo2);
     // Toggle the tileset's show property when the button is clicked.
     document.querySelector('#toggle-building').onclick = function() {
       sonobudoyo2.show = !sonobudoyo2.show;
     };
 
+    const scene = viewer.scene;
+const canvas = viewer.canvas;
+canvas.setAttribute("tabindex", "0"); // needed to put focus on the canvas
+canvas.onclick = function () {
+  canvas.focus();
+};
+const ellipsoid = scene.globe.ellipsoid;
 
+// disable the default event handlers
+scene.screenSpaceCameraController.enableRotate = false;
+scene.screenSpaceCameraController.enableTranslate = false;
+scene.screenSpaceCameraController.enableZoom = false;
+scene.screenSpaceCameraController.enableTilt = false;
+scene.screenSpaceCameraController.enableLook = false;
 
+let startMousePosition;
+let mousePosition;
+const flags = {
+  looking: false,
+  moveForward: false,
+  moveBackward: false,
+  moveUp: false,
+  moveDown: false,
+  moveLeft: false,
+  moveRight: false,
+};
 
+const handler = new Cesium.ScreenSpaceEventHandler(canvas);
 
+handler.setInputAction(function (movement) {
+  flags.looking = true;
+  mousePosition = startMousePosition = Cesium.Cartesian3.clone(
+    movement.position
+  );
+}, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+handler.setInputAction(function (movement) {
+  mousePosition = movement.endPosition;
+}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+handler.setInputAction(function (position) {
+  flags.looking = false;
+}, Cesium.ScreenSpaceEventType.LEFT_UP);
+
+function getFlagForKeyCode(keyCode) {
+  switch (keyCode) {
+    case "W".charCodeAt(0):
+      return "moveForward";
+    case "S".charCodeAt(0):
+      return "moveBackward";
+    case "Q".charCodeAt(0):
+      return "moveUp";
+    case "E".charCodeAt(0):
+      return "moveDown";
+    case "D".charCodeAt(0):
+      return "moveRight";
+    case "A".charCodeAt(0):
+      return "moveLeft";
+    default:
+      return undefined;
+  }
+}
+
+document.addEventListener(
+  "keydown",
+  function (e) {
+    const flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== "undefined") {
+      flags[flagName] = true;
+    }
+  },
+  false
+);
+
+document.addEventListener(
+  "keyup",
+  function (e) {
+    const flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== "undefined") {
+      flags[flagName] = false;
+    }
+  },
+  false
+);
+
+viewer.clock.onTick.addEventListener(function (clock) {
+  const camera = viewer.camera;
+
+  if (flags.looking) {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    // Coordinate (0.0, 0.0) will be where the mouse was clicked.
+    const x = (mousePosition.x - startMousePosition.x) / width;
+    const y = -(mousePosition.y - startMousePosition.y) / height;
+
+    const lookFactor = 0.05;
+    camera.lookRight(x * lookFactor);
+    camera.lookUp(y * lookFactor);
+  }
+
+  // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+  const cameraHeight = ellipsoid.cartesianToCartographic(
+    camera.position
+  ).height;
+  const moveRate = cameraHeight / 100.0;
+
+  if (flags.moveForward) {
+    camera.moveForward(moveRate);
+  }
+  if (flags.moveBackward) {
+    camera.moveBackward(moveRate);
+  }
+  if (flags.moveUp) {
+    camera.moveUp(moveRate);
+  }
+  if (flags.moveDown) {
+    camera.moveDown(moveRate);
+  }
+  if (flags.moveLeft) {
+    camera.moveLeft(moveRate);
+  }
+  if (flags.moveRight) {
+    camera.moveRight(moveRate);
+  }
+});
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(110.364855, -7.801388,  1500.0),
+});
   // set lighting to true
   viewer.scene.globe.enableLighting = true;
   // adjust time so scene is lit by sun
